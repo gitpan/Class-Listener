@@ -4,19 +4,11 @@ use 5.006;
 use strict;
 use warnings;
 
-use Class::Maker;
-
-our $VERSION = '0.01.01';
+our $VERSION = '0.01.04';
 
 our $DEBUG = 0;
 
-    Class::Maker::class
-    {
-        public =>
-        {
-            hash  => [qw( events )],
-        },
-    };
+our $callback_fmt = "_on_%s";
 
     sub signal : method
     {
@@ -24,14 +16,11 @@ our $DEBUG = 0;
 
         my $event = shift;
 
-            if( exists $this->events->{$event} )
-            {
-                return $this->events->{$event}->( $this, $event, @_ );
-            }
-            else
-            {
-                warn "D: ", $event." - unimplemented event called\n" if $DEBUG;
-            }
+		my $method = sprintf $callback_fmt, $event;
+		
+            return $this->$method( $event, @_ ) if $this->can( $method );
+
+            warn "D: $method - unimplemented event called\n" if $DEBUG;
 
     return undef;
     }
@@ -41,7 +30,7 @@ __END__
 
 =head1 NAME
 
-Class::Listener - executes callbacks on events
+Class::Listener - executes methods on events
 
 =head1 SYNOPSIS
 
@@ -50,16 +39,28 @@ Class::Listener - executes callbacks on events
   {
     package My::Listener;
 
-    @ISA = qw(Class::Listener);
+    our @ISA = qw(Class::Listener);
+	
+	sub new 
+	{
+		bless [], 'My::Listener';
+	}
+	
+	sub _on_event
+	{
+		print "event received";
+	}	
   }
 
-  my $l = My::Listener->new( events => { eventname => sub { } );
+  my $l = My::Listener->new();
 
-  $l->Class::Listener::signal( 'eventname', @args );
+	# call '_on_event' method
+	
+  $l->Class::Listener::signal( 'event', @args );
 
 =head1 DESCRIPTION
 
-This class has a callback hash. It executes the subs via the signal method.
+A base class which listenes for signals and runs methods.
 
 =head2 METHODS
 
@@ -69,7 +70,7 @@ This class has a callback hash. It executes the subs via the signal method.
 
 =item $eventname
 
-a key in thte C<events> callback hash.
+A method with the name "_on_$eventname" will be called (if it exists).
 
 =item @args
 
@@ -82,7 +83,6 @@ This array is forwarded to the callback.
 =head2 EXPORT
 
 None by default.
-
 
 =head1 AUTHOR
 

@@ -4,3 +4,6 @@ Revision history for Perl extension Class::Listener.
 	- original version; created by h2xs 1.21 with options
 		-A -X -a -n Class::Listener
 
+
+0.01.02
+	- API Change: No more hash and subrefs, but calling on_event methods !

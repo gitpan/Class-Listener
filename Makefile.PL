@@ -6,7 +6,6 @@ WriteMakefile(
     'VERSION_FROM'	=> 'Listener.pm', # finds $VERSION
     'PREREQ_PM'		=>
     {
-       Class::Proxy => 0,
        Class::Maker => 0
 
     }, # e.g., Module::Name => 1.1
